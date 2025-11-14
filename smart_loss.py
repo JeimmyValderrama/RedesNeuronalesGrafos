@@ -212,29 +212,6 @@ class SmartMSTLoss(nn.Module):
                 total_score = (total_score - min_score) / (max_score - min_score + 1e-8)
 
         return total_score
-
-    def forward(self, logits, data):
-        """Loss híbrido: clasificación + ranking. CORREGIDO"""
-        # Loss 1: Clasificación
-        bce = self.bce_loss(logits, data.y)
-        
-        # Loss 2: Ranking (CORREGIDO: alinear con probabilidades GNN)
-        edge_scores = self.compute_edge_scores(data, normalize=True)
-        probabilities = torch.sigmoid(logits)
-        
-        # ¡NO invertir! Queremos que high score = high probability
-        ranking_loss = torch.nn.functional.mse_loss(probabilities, edge_scores)  # CORREGIDO
-        
-        # Loss total
-        total_loss = (1 - self.alpha) * bce + self.alpha * ranking_loss
-        
-        # DEBUG: Ver qué está pasando
-        if torch.isnan(total_loss):
-            print(f"DEBUG - Alpha: {self.alpha}, BCE: {bce.item():.4f}, Ranking: {ranking_loss.item():.4f}")
-            print(f"Edge scores range: [{edge_scores.min().item():.3f}, {edge_scores.max().item():.3f}]")
-            print(f"Probabilities range: [{probabilities.min().item():.3f}, {probabilities.max().item():.3f}]")
-        
-        return total_loss
     
     def forward(self, logits, data):
         """Loss híbrido: clasificación + ranking."""

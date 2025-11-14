@@ -15,7 +15,9 @@ def clean_old_files():
     # Archivos individuales a eliminar
     files_to_remove = [
         'dataset_schema.json',
-        'synthetic_dataset_smart.pkl', 
+        'test_dataset.pkl', 
+        'train_dataset.pkl', 
+        'val_dataset.pkl', 
         'best_model_smart.pt'
     ]
     

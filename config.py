@@ -16,7 +16,7 @@ MODELS_DIR = PROJECT_ROOT / "models"
 RESULTS_DIR = PROJECT_ROOT / "results"
 PLOTS_DIR = PROJECT_ROOT / "plots"
 
-ALPHA = 0.7  # Balance para SmartMSTLoss
+ALPHA = 0.3  # Balance para SmartMSTLoss
 
 for directory in [DATA_DIR, MODELS_DIR, RESULTS_DIR, PLOTS_DIR]:
     directory.mkdir(exist_ok=True)

@@ -281,11 +281,6 @@ class MST_Trainer:
                     if epoch % log_interval == 0 or epoch == 1:
                         print(f"  ✓ Mejor modelo guardado (val_loss: {val_loss:.4f})")
             
-            # Early stopping
-            if self.early_stopping(val_loss):
-                print(f"\n⚠ Early stopping en época {epoch}")
-                break
-        
         print("\n" + "=" * 70)
         print("ENTRENAMIENTO COMPLETADO")
         print("=" * 70)
