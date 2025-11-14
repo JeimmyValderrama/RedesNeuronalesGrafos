@@ -65,7 +65,7 @@ class DatasetAnalyzer:
         feature_cols = [col for col in df.columns 
                        if not any(ig in col.lower() for ig in ignore_cols)]
         
-        print(f"\n📊 Columnas de características detectadas: {len(feature_cols)}")
+        print(f"\n Columnas de características detectadas: {len(feature_cols)}")
         
         # Analizar cada característica
         for col in feature_cols:
@@ -130,9 +130,6 @@ class DatasetAnalyzer:
                 feature_names.append(f"{col}_{cat}")
         
         self.schema['feature_names'] = feature_names
-    
-        for i, name in enumerate(feature_names, 1):
-            print(f"  {i}. {name}")
         
         print("=" * 70)
         

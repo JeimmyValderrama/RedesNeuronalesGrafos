@@ -1,18 +1,19 @@
-Nombre;longitud;latitud;tipo;capacidad_kva;prioridad;demanda_proyectada_kva;costo_mantenimiento_anual;factor_riesgo;zona
-Hotel Añoranzas;-73.006497;5.752351;residencial;45;media;55;1200000;0.15;urbana
-Hotel Bella Tierra;-73.007418;5.751299;residencial;45;media;50;1200000;0.15;urbana
-Cementerio;-73.005089;5.750479;publico;30;alta;40;800000;0.05;urbana
-Casa Valentino Hotel - Hamburguesería;-73.004871;5.747020;residencial;40;media;60;1100000;0.20;urbana
-Hotel Boutique Los Vagones De William;-73.002998;5.749377;residencial;50;media;70;1400000;0.18;urbana
-Hospederia Santa Elena- Hotel;-73.004679;5.744910;residencial;45;media;55;1200000;0.15;urbana
-SanBenitoHotel;-73.005212;5.741833;residencial;40;media;50;1100000;0.20;urbana
-Denticenter;-73.002415;5.744702;publico;35;alta;45;950000;0.05;urbana
-Corazon de Melon;-73.000879;5.741962;comercial;60;alta;90;1800000;0.25;comercial
-Tiendas D1;-73.001366;5.746262;comercial;75;alta;110;2200000;0.30;comercial
-Parque Ecologico;-72.997600;5.743930;publico;25;alta;35;700000;0.08;recreativa
-IE JCP;-72.997936;5.746460;publico;50;alta;65;1500000;0.05;educativa
-Casa Motta;-72.999524;5.748653;comercial;55;alta;80;1650000;0.22;comercial
-Sabajon Don Joaquin;-72.997969;5.750671;comercial;50;alta;75;1500000;0.20;comercial
-San Nicolas;-72.997116;5.748995;comercial;50;alta;75;1500000;0.20;comercial
-El tenampa club;-72.993528;5.746947;comercial;65;media;95;1950000;0.28;comercial
-Hotel La Marquesa;-72.993718;5.752336;residencial;45;media;55;1200000;0.15;urbana
+Nombre;longitud;latitud;tipo;capacidad_kva;prioridad;criticidad;demanda_proyectada_kva;costo_mantenimiento_anual;tiempo_instalacion_dias;factor_riesgo;zona;accesibilidad;disponibilidad_terreno
+Hotel Añoranzas;-73.006497;5.752351;residencial;45;media;media;55;1200000;5;0.15;urbana;facil;alta
+Hotel Bella Tierra;-73.007418;5.751299;residencial;45;media;media;50;1200000;5;0.15;urbana;facil;alta
+Cementerio;-73.005089;5.750479;publico;30;alta;alta;40;800000;3;0.05;urbana;facil;alta
+Casa Valentino Hotel - Hamburguesería;-73.004871;5.747020;residencial;40;media;baja;60;1100000;6;0.20;urbana;media;media
+Hotel Boutique Los Vagones De William;-73.002998;5.749377;residencial;50;media;media;70;1400000;7;0.18;urbana;media;media
+Hospederia Santa Elena- Hotel;-73.004679;5.744910;residencial;45;media;media;55;1200000;5;0.15;urbana;facil;alta
+SanBenitoHotel;-73.005212;5.741833;residencial;40;media;baja;50;1100000;6;0.20;urbana;media;media
+Denticenter;-73.002415;5.744702;publico;35;alta;critica;45;950000;3;0.05;urbana;facil;alta
+Corazon de Melon;-73.000879;5.741962;comercial;60;alta;critica;90;1800000;8;0.25;comercial;media;baja
+Tiendas D1;-73.001366;5.746262;comercial;75;alta;critica;110;2200000;10;0.30;comercial;dificil;baja
+Parque Ecologico;-72.997600;5.743930;publico;25;alta;alta;35;700000;4;0.08;recreativa;facil;alta
+IE JCP;-72.997936;5.746460;publico;50;alta;critica;65;1500000;4;0.05;educativa;facil;alta
+Casa Motta;-72.999524;5.748653;comercial;55;alta;alta;80;1650000;7;0.22;comercial;media;media
+Sabajon Don Joaquin;-72.997969;5.750671;comercial;50;alta;alta;75;1500000;6;0.20;comercial;facil;media
+San Nicolas;-72.997116;5.748995;comercial;50;alta;alta;75;1500000;6;0.20;comercial;facil;media
+El tenampa club;-72.993528;5.746947;comercial;65;media;media;95;1950000;9;0.28;comercial;media;baja
+Hotel La Marquesa;-72.993718;5.752336;residencial;45;media;baja;55;1200000;5;0.15;urbana;facil;alta
+

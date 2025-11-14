@@ -39,7 +39,7 @@ class TibasosaCoordinatesLoader:
             df = pd.read_csv(self.file_path, encoding='latin1', sep=';', skip_blank_lines=True)
             print(f"✓ Archivo cargado: {self.file_path}")
         except Exception as e:
-            print(f"❌ Error al leer el archivo: {e}")
+            print(f"Error al leer el archivo: {e}")
             return None
 
         print(f"  Puntos encontrados: {len(df)}")
@@ -105,7 +105,7 @@ class TibasosaCoordinatesLoader:
         print("CONSTRUYENDO GRAFO DE RED ELÉCTRICA")
         print("=" * 70)
         
-        # 🔴 CAMBIO CRÍTICO: Nodos empiezan desde 0
+        # CAMBIO CRÍTICO: Nodos empiezan desde 0
         for idx, row in self.df.iterrows():
             node_id = idx  # Índice directo desde 0
             
@@ -170,7 +170,7 @@ class TibasosaCoordinatesLoader:
         if self.G is None:
             raise ValueError("Primero construye el grafo con build_complete_graph()")
         
-        # 🔴 CAMBIO: Mapeo directo sin transformación
+        # CAMBIO: Mapeo directo sin transformación
         node_mapping = {node: node for node in sorted(self.G.nodes())}
         num_nodes = len(node_mapping)
         
@@ -189,7 +189,7 @@ class TibasosaCoordinatesLoader:
         edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous()
         edge_attr = torch.tensor(edge_attr, dtype=torch.float)
         
-        # 🔥 CARACTERÍSTICAS AUTOMÁTICAS
+        # CARACTERÍSTICAS AUTOMÁTICAS
         print("\n" + "=" * 70)
         print("CODIFICANDO CARACTERÍSTICAS DE NODOS")
         print("=" * 70)

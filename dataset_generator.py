@@ -310,7 +310,7 @@ def graph_to_pyg_data(G: nx.Graph, mst: nx.Graph,
     edge_attr = torch.tensor(edge_attr, dtype=torch.float)
     y = torch.tensor(edge_labels, dtype=torch.float)
     
-    # 🔥 CARACTERÍSTICAS INTELIGENTES CON CORRELACIONES
+    # CARACTERÍSTICAS INTELIGENTES CON CORRELACIONES
     if analyzer is not None and analyzer.analyzed:
         degrees = dict(G.degree())
         node_features = generate_smart_features(num_nodes, degrees, G, analyzer)

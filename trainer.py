@@ -82,7 +82,7 @@ class MST_Trainer:
         self.use_smart_loss = use_smart_loss
         
         if use_smart_loss:
-            self.criterion = SmartMSTLoss(alpha=0.3).to(self.device)
+            self.criterion = SmartMSTLoss(alpha=config.ALPHA).to(self.device)
         else:
             pos_weight = torch.tensor([3.0]).to(self.device)
             self.criterion = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)

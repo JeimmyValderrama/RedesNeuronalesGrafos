@@ -51,10 +51,10 @@ def generate_and_save_dataset(analyzer=None):
     seed = config.DATASET_CONFIG['seed']
     
     if analyzer is not None:
-        print(f"\n🎯 Generando {num_graphs} grafos ADAPTADOS al dataset objetivo...")
+        print(f"\n Generando {num_graphs} grafos ADAPTADOS al dataset objetivo...")
         print(f"   Características: {analyzer.get_num_features()}")
     else:
-        print(f"\n⚠️ Generando {num_graphs} grafos en MODO BÁSICO...")
+        print(f"\n Generando {num_graphs} grafos en MODO BÁSICO...")
         print(f"   (sin analizador - solo grado normalizado)")
     
     data_list = generate_synthetic_graphs(
@@ -84,7 +84,7 @@ def train_model(train_data, val_data):
     print("\nCreando modelo GAT...")
     model = EdgeGAT()
     
-    # 🔥 INICIALIZAR MODELO CON PRIMER BATCH
+    # INICIALIZAR MODELO CON PRIMER BATCH
     print("Inicializando modelo con datos de muestra...")
     sample_data = train_data[0].to(config.DEVICE)
     _ = model(sample_data)
@@ -177,7 +177,7 @@ def solve_tibasosa_problem(model=None):
     results = compare_mst_algorithms(G, model, data)
     print_comparison_results(results)
     
-    # 🔥 ANÁLISIS DE DECISIONES DIFERENTES
+    # ANÁLISIS DE DECISIONES DIFERENTES
     if 'gnn_smart' in results:
         analyze_decision_differences(G, results, data)
     
@@ -221,9 +221,9 @@ def solve_tibasosa_problem(model=None):
             algorithm_name=algo_name
         )
     
-    # 🔥 MOSTRAR SOLUCIÓN ÓPTIMA (KRUSKAL)
+    # MOSTRAR SOLUCIÓN ÓPTIMA (KRUSKAL)
     print("\n" + "=" * 70)
-    print("SOLUCIÓN ÓPTIMA")
+    print("SOLUCIÓN KRUSTAL")
     print("=" * 70)
     solution_kruskal = extract_mst_solution(results['kruskal']['mst'])
     print("\nConexiones de cable necesarias:")
@@ -235,7 +235,7 @@ def solve_tibasosa_problem(model=None):
     print(f"METRAJE TOTAL DE CABLE (KRUSKAL): {total_weight_kruskal:.2f} METROS")
     print(f"{'='*70}")
     
-    # 🔥 MOSTRAR SOLUCIÓN GNN SI DISPONIBLE
+    # MOSTRAR SOLUCIÓN GNN SI DISPONIBLE
     if 'gnn_smart' in results:
         print("\n" + "=" * 70)
         print("SOLUCIÓN GNN-GUIDED")
@@ -258,12 +258,12 @@ def solve_tibasosa_problem(model=None):
         print(f"   Diferencia:         {gnn_weight - total_weight_kruskal:+.2f} metros ({gap:+.2f}%)")
         
         if abs(gap) < 0.01:
-            print(f"\n   🏆 ¡GNN ENCONTRÓ LA SOLUCIÓN ÓPTIMA!")
+            print(f"\n   ¡GNN ENCONTRÓ LA SOLUCIÓN ÓPTIMA!")
         elif gap < 5:
-            print(f"\n   ✅ GNN logró solución excelente (< 5% gap)")
-            print(f"   💡 Ventajas: prioriza nodos críticos, minimiza riesgo, optimiza demanda")
+            print(f"\n   GNN logró solución excelente (< 5% gap)")
+            print(f"    Ventajas: prioriza nodos críticos, minimiza riesgo, optimiza demanda")
     else:
-        print("\n⚠️ No hay solución GNN disponible (modelo no cargado)")
+        print("\n No hay solución GNN disponible (modelo no cargado)")
     
     print("\n✓ Problema resuelto exitosamente!")
 
@@ -299,7 +299,7 @@ def main():
     
     args = parser.parse_args()
     
-    # 🔥 PASO 1: ANALIZAR DATASET OBJETIVO
+    # PASO 1: ANALIZAR DATASET OBJETIVO
     from dataset_analyzer import analyze_target_dataset
     
     analyzer = None
@@ -313,16 +313,16 @@ def main():
         analyzer = analyze_target_dataset(args.dataset_file)
         num_features = analyzer.get_num_features()
         
-        print(f"\n✅ DATASET ANALIZADO EXITOSAMENTE")
+        print(f"\n DATASET ANALIZADO EXITOSAMENTE")
         print(f"   • Características totales: {num_features}")
         print(f"   • El dataset sintético se adaptará a estas características")
         
     except Exception as e:
-        print(f"\n⚠️ No se pudo analizar dataset objetivo: {e}")
+        print(f"\n No se pudo analizar dataset objetivo: {e}")
         print(f"   • Usando características por defecto")
         analyzer = None
     
-    # 🔥 PASO 2: CARGAR DATOS REALES
+    #  PASO 2: CARGAR DATOS REALES
     _, data_tibasosa = load_tibasosa_coordinates(args.dataset_file)
     actual_features = data_tibasosa.x.shape[1]
     
@@ -342,24 +342,24 @@ def main():
             
             # Verificar dimensiones
             if train_data[0].x.shape[1] != actual_features:
-                print(f"\n⚠️ Dimensiones incompatibles:")
+                print(f"\n Dimensiones incompatibles:")
                 print(f"   Dataset sintético: {train_data[0].x.shape[1]} features")
                 print(f"   Dataset objetivo: {actual_features} features")
                 print(f"   Regenerando...")
                 need_regenerate = True
             else:
-                print(f"✅ Dimensiones compatibles ({actual_features} features)")
+                print(f" Dimensiones compatibles ({actual_features} features)")
         else:
             need_regenerate = True
         
         if need_regenerate:
-            print("\n🔄 Generando dataset sintético adaptado...")
+            print("\n Generando dataset sintético adaptado...")
             train_data, val_data, test_data = generate_and_save_dataset(analyzer=analyzer)
         
         if not args.skip_training:
             model, trainer = train_model(train_data, val_data)
         else:
-            print("\n⚠️ Saltar entrenamiento - Cargando modelo existente...")
+            print("\n Saltar entrenamiento - Cargando modelo existente...")
             model = EdgeGAT()
             model_path = config.MODELS_DIR / 'best_model.pt'
             if model_path.exists():
@@ -367,7 +367,7 @@ def main():
                 model.load_state_dict(checkpoint['model_state_dict'])
                 print(f"✓ Modelo cargado desde: {model_path}")
             else:
-                print(f"⚠️ No se encontró modelo guardado")
+                print(f" No se encontró modelo guardado")
                 model = None
     
     if args.mode in ['evaluate', 'full']:
@@ -381,11 +381,11 @@ def main():
                 model.load_state_dict(checkpoint['model_state_dict'])
             evaluate_model(model, test_data)
         else:
-            print("\n⚠️ Test dataset no encontrado, saltando evaluación...")
+            print("\n Test dataset no encontrado, saltando evaluación...")
     
     if args.mode in ['solve', 'full']:
         if model is None:
-            print("\n⚠️ Intentando cargar modelo para resolver problema...")
+            print("\n Intentando cargar modelo para resolver problema...")
             model = EdgeGAT()
             model_path = config.MODELS_DIR / 'best_model.pt'
             if model_path.exists():

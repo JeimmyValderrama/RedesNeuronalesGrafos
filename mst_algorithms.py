@@ -85,7 +85,7 @@ class MSTSolver:
                     prob = probs[i]
                     
                     if use_smart_scoring:
-                        # 🔥 CALCULAR SCORE INTELIGENTE
+                        # CALCULAR SCORE INTELIGENTE
                         smart_score = self._compute_smart_score(
                             u, v, weight, prob, node_features
                         )
@@ -154,6 +154,12 @@ class MSTSolver:
         - Probabilidad GNN (30%)
         - Distancia normalizada (30%)
         - Características de los nodos (40%)
+        
+        Características disponibles:
+        0: Nombre (no se usa), 1: longitud, 2: latitud, 3: tipo, 4: capacidad_kva,
+        5: prioridad, 6: criticidad, 7: demanda_proyectada_kva, 8: costo_mantenimiento_anual,
+        9: tiempo_instalacion_dias, 10: factor_riesgo, 11: zona, 12: accesibilidad,
+        13: disponibilidad_terreno
         """
         num_nodes, num_features = node_features.shape
         
@@ -168,51 +174,113 @@ class MSTSolver:
         feat_u = node_features[u]
         feat_v = node_features[v]
         
-        # Detectar qué características existen basándose en num_features
         score_features = 0.0
+        feature_weights = []
+        feature_scores = []
         
-        # CRITICIDAD (buscar en características categóricas al final)
-        if num_features >= 15:  # Dataset con criticidad
-            # Las últimas 4 features suelen ser criticidad
-            criticidad_start = num_features - 11  # Ajustar según estructura
-            criticidad_features_u = feat_u[criticidad_start:criticidad_start+4]
-            criticidad_features_v = feat_v[criticidad_start:criticidad_start+4]
-            
-            # Valores: [baja, media, alta, critica]
-            criticidad_weights = np.array([0.2, 0.4, 0.7, 1.0])
-            criticidad_u = np.dot(criticidad_features_u, criticidad_weights)
-            criticidad_v = np.dot(criticidad_features_v, criticidad_weights)
-            criticidad_score = (criticidad_u + criticidad_v) / 2.0
-            
-            score_features += criticidad_score * 0.35  # 35% de las features
+        # 1. CRITICIDAD (feature 6) - Muy importante
+        if num_features > 6:
+            criticidad_u = feat_u[6]
+            criticidad_v = feat_v[6]
+            # Normalizar criticidad (asumiendo escala 1-4: baja=1, media=2, alta=3, critica=4)
+            criticidad_score = ((criticidad_u + criticidad_v) / 2.0) / 4.0
+            feature_scores.append(criticidad_score)
+            feature_weights.append(0.25)  # 25% del componente features
         
-        # DEMANDA PROYECTADA (feature 2 si existe)
-        if num_features > 2:
-            demanda_u = feat_u[2]
-            demanda_v = feat_v[2]
-            demanda_score = (demanda_u + demanda_v) / 2.0
-            score_features += demanda_score * 0.25  # 25% de las features
+        # 2. CAPACIDAD KVA (feature 4) - Muy importante
+        if num_features > 4:
+            capacidad_u = feat_u[4]
+            capacidad_v = feat_v[4]
+            # Normalizar capacidad (asumiendo máximo 10000 kVA)
+            max_capacidad = 10000.0
+            capacidad_score = ((capacidad_u + capacidad_v) / 2.0) / max_capacidad
+            feature_scores.append(capacidad_score)
+            feature_weights.append(0.20)  # 20% del componente features
         
-        # FACTOR DE RIESGO (feature 5 si existe) - invertido (menos riesgo = mejor)
+        # 3. DEMANDA PROYECTADA KVA (feature 7) - Importante
+        if num_features > 7:
+            demanda_u = feat_u[7]
+            demanda_v = feat_v[7]
+            # Normalizar demanda (asumiendo máximo 5000 kVA)
+            max_demanda = 5000.0
+            demanda_score = ((demanda_u + demanda_v) / 2.0) / max_demanda
+            feature_scores.append(demanda_score)
+            feature_weights.append(0.15)  # 15% del componente features
+        
+        # 4. PRIORIDAD (feature 5) - Importante
         if num_features > 5:
-            riesgo_u = feat_u[5]
-            riesgo_v = feat_v[5]
+            prioridad_u = feat_u[5]
+            prioridad_v = feat_v[5]
+            # Normalizar prioridad (asumiendo escala 1-5)
+            prioridad_score = ((prioridad_u + prioridad_v) / 2.0) / 5.0
+            feature_scores.append(prioridad_score)
+            feature_weights.append(0.12)  # 12% del componente features
+        
+        # 5. FACTOR DE RIESGO (feature 10) - Invertido (menos riesgo = mejor)
+        if num_features > 10:
+            riesgo_u = feat_u[10]
+            riesgo_v = feat_v[10]
+            # Normalizar riesgo (asumiendo escala 0-1)
             riesgo_score = 1.0 - ((riesgo_u + riesgo_v) / 2.0)
-            score_features += riesgo_score * 0.20  # 20% de las features
+            feature_scores.append(riesgo_score)
+            feature_weights.append(0.10)  # 10% del componente features
         
-        # CAPACIDAD (feature 1 si existe)
-        if num_features > 1:
-            capacidad_u = feat_u[1]
-            capacidad_v = feat_v[1]
-            capacidad_score = (capacidad_u + capacidad_v) / 2.0
-            score_features += capacidad_score * 0.20  # 20% de las features
+        # 6. ACCESIBILIDAD (feature 12) - Invertido (mejor accesibilidad = mejor)
+        if num_features > 12:
+            accesibilidad_u = feat_u[12]
+            accesibilidad_v = feat_v[12]
+            # Normalizar accesibilidad (asumiendo escala 1-5, donde 1=muy difícil, 5=muy fácil)
+            accesibilidad_score = ((accesibilidad_u + accesibilidad_v) / 2.0) / 5.0
+            feature_scores.append(accesibilidad_score)
+            feature_weights.append(0.08)  # 8% del componente features
         
-        # Normalizar score_features
-        if num_features > 1:
-            score_features *= 0.40  # 40% del score total
+        # 7. DISPONIBILIDAD TERRENO (feature 13) - Importante para expansión
+        if num_features > 13:
+            terreno_u = feat_u[13]
+            terreno_v = feat_v[13]
+            # Normalizar disponibilidad (asumiendo escala 0-1, 1=disponible)
+            terreno_score = (terreno_u + terreno_v) / 2.0
+            feature_scores.append(terreno_score)
+            feature_weights.append(0.05)  # 5% del componente features
+        
+        # 8. COSTO MANTENIMIENTO (feature 8) - Invertido (menor costo = mejor)
+        if num_features > 8:
+            costo_u = feat_u[8]
+            costo_v = feat_v[8]
+            # Normalizar costo (asumiendo máximo 50000 USD anual)
+            max_costo = 50000.0
+            costo_score = 1.0 - (((costo_u + costo_v) / 2.0) / max_costo)
+            feature_scores.append(costo_score)
+            feature_weights.append(0.03)  # 3% del componente features
+        
+        # 9. TIEMPO INSTALACIÓN (feature 9) - Invertido (menor tiempo = mejor)
+        if num_features > 9:
+            tiempo_u = feat_u[9]
+            tiempo_v = feat_v[9]
+            # Normalizar tiempo (asumiendo máximo 180 días)
+            max_tiempo = 180.0
+            tiempo_score = 1.0 - (((tiempo_u + tiempo_v) / 2.0) / max_tiempo)
+            feature_scores.append(tiempo_score)
+            feature_weights.append(0.02)  # 2% del componente features
+        
+        # Calcular score ponderado de características
+        if feature_scores and feature_weights:
+            total_feature_weight = sum(feature_weights)
+            # Normalizar pesos para que sumen 1.0
+            normalized_weights = [w / total_feature_weight for w in feature_weights]
+            
+            # Calcular score ponderado
+            weighted_score = sum(score * weight for score, weight in zip(feature_scores, normalized_weights))
+            score_features = weighted_score * 0.40  # 40% del score total
+        else:
+            # Fallback si no hay características suficientes
+            score_features = 0.20  # Score base
         
         # SCORE FINAL
         total_score = score_gnn + score_distance + score_features
+        
+        # Asegurar que el score esté en [0, 1]
+        total_score = max(0.0, min(1.0, total_score))
         
         return total_score
 
@@ -274,7 +342,7 @@ def print_comparison_results(results: Dict):
     print("=" * 80)
     
     for algo_name, result in results.items():
-        print(f"\n{'🔷' if 'gnn' in algo_name else '🔹'} {algo_name.upper()}:")
+        print(f"\n{'' if 'gnn' in algo_name else ''} {algo_name.upper()}:")
         print(f"  • Método: {result.get('method', 'Clásico')}")
         print(f"  • Peso total: {result['weight']:.2f} metros")
         print(f"  • Aristas en MST: {result['num_edges']}")
@@ -289,15 +357,15 @@ def print_comparison_results(results: Dict):
             print(f"  • Gap vs óptimo: {gap:+.2f}%")
             
             if abs(gap) < 0.01:
-                print(f"  ✅ ¡Solución ÓPTIMA!")
+                print(f"  ¡Solución ÓPTIMA!")
             elif gap < 0:
-                print(f"  🏆 ¡MEJOR que Kruskal! (imposible, revisar)")
+                print(f"  ¡MEJOR que Kruskal!")
             elif gap < 5:
-                print(f"  ✅ Excelente (<5% extra)")
+                print(f"  Excelente (<5% extra)")
             elif gap < 10:
-                print(f"  ⚠️ Aceptable (5-10% extra)")
+                print(f"  Aceptable (5-10% extra)")
             else:
-                print(f"  📊 Sacrificio por criterios inteligentes (>{gap:.1f}%)")
+                print(f"  Sacrificio por criterios inteligentes (>{gap:.1f}%)")
     
     print("=" * 80)
 
@@ -354,20 +422,20 @@ def analyze_decision_differences(G: nx.Graph, results: Dict, data: Data):
     only_gnn = gnn_edges - kruskal_edges
     
     if not only_gnn:
-        print("\n⚠️ GNN eligió las MISMAS aristas que Kruskal")
+        print("\n GNN eligió las MISMAS aristas que Kruskal")
         print("   Posibles causas:")
         print("   1. Pocas características diferentes entre nodos")
         print("   2. Modelo no entrenó suficiente con características")
         print("   3. Características no son discriminativas")
         return
     
-    print(f"\n🔍 ARISTAS DIFERENTES:")
+    print(f"\n ARISTAS DIFERENTES:")
     print(f"   Solo en Kruskal: {len(only_kruskal)}")
     print(f"   Solo en GNN-Smart: {len(only_gnn)}")
     
     node_features = data.x.cpu().numpy()
     
-    print(f"\n💡 ARISTAS QUE GNN ELIGIÓ (en lugar de Kruskal):")
+    print(f"\n ARISTAS QUE GNN ELIGIÓ (en lugar de Kruskal):")
     for i, (u, v) in enumerate(list(only_gnn)[:5], 1):
         dist_gnn = G[u][v]['weight']
         
@@ -389,7 +457,7 @@ def analyze_decision_differences(G: nx.Graph, results: Dict, data: Data):
         if only_kruskal:
             u_k, v_k = list(only_kruskal)[0]
             dist_kruskal = G[u_k][v_k]['weight']
-            print(f"   🔄 Reemplazó: ({u_k}, {v_k}): {dist_kruskal:.2f}m")
-            print(f"   📊 Sacrificio: +{dist_gnn - dist_kruskal:.2f}m")
+            print(f"   Reemplazó: ({u_k}, {v_k}): {dist_kruskal:.2f}m")
+            print(f"   Sacrificio: +{dist_gnn - dist_kruskal:.2f}m")
     
     print("=" * 80)

@@ -119,10 +119,10 @@ class GraphVisualizer:
         plt.show()
     
     def plot_mst_comparison(self,
-                           G: nx.Graph,
-                           results: Dict,
-                           pos: Dict = None,
-                           save_path: Path = None):
+                        G: nx.Graph,
+                        results: Dict,
+                        pos: Dict = None,
+                        save_path: Path = None):
         """
         Compara visualmente diferentes soluciones de MST.
         
@@ -133,10 +133,16 @@ class GraphVisualizer:
             save_path: Ruta para guardar
         """
         n_algorithms = len(results)
-        fig, axes = plt.subplots(1, n_algorithms, figsize=(6*n_algorithms, 6))
         
-        if n_algorithms == 1:
-            axes = [axes]
+        # Crear figura con espacio adicional para la lista de nodos
+        fig = plt.figure(figsize=(6*n_algorithms, 8))
+        
+        # Crear grid: 2 filas (gráficos arriba, lista abajo)
+        gs = plt.GridSpec(2, n_algorithms, height_ratios=[4, 1])
+        
+        axes = []
+        for i in range(n_algorithms):
+            axes.append(fig.add_subplot(gs[0, i]))
         
         # Calcular layout si no se proporciona
         if pos is None:
@@ -208,15 +214,103 @@ class GraphVisualizer:
             ax.set_title(title, fontsize=12, fontweight='bold')
             ax.axis('off')
         
+        # --- MEJOR DISTRIBUCIÓN DE LISTA DE NODOS ---
+        ax_list = fig.add_subplot(gs[1, :])  # Ocupa toda la segunda fila
+        
+        # Obtener información de los nodos
+        node_info = []
+        for node_id, node_data in G.nodes(data=True):
+            node_name = node_data.get('name', f'Nodo {node_id}')
+            node_type = node_data.get('tipo', 'Desconocido')
+            
+            # Obtener coordenadas si existen
+            if 'pos' in node_data:
+                x, y = node_data['pos']
+                coord_text = f"({x:.1f}, {y:.1f})"
+            else:
+                coord_text = "(Sin coordenadas)"
+            
+            node_info.append(f"{node_id}. {node_name} - {node_type} {coord_text}")
+        
+        # MEJORA: Distribución más compacta en columnas
+        n_columns = min(4, len(node_info))  # Máximo 4 columnas, ajusta según necesidad
+        chunk_size = (len(node_info) + n_columns - 1) // n_columns
+        
+        # Crear columnas más compactas
+        column_texts = []
+        for i in range(n_columns):
+            start_idx = i * chunk_size
+            end_idx = min((i + 1) * chunk_size, len(node_info))
+            column_nodes = node_info[start_idx:end_idx]
+            column_texts.append("\n".join(column_nodes))
+        
+        # MEJORA: Usar tabla en lugar de texto simple
+        from matplotlib.table import Table
+        
+        # Limpiar el axes para la tabla
+        ax_list.clear()
+        ax_list.axis('off')
+        
+        # Crear tabla
+        table_data = []
+        for i in range(chunk_size):
+            row = []
+            for j in range(n_columns):
+                idx = j * chunk_size + i
+                if idx < len(node_info):
+                    row.append(node_info[idx])
+                else:
+                    row.append("")
+            table_data.append(row)
+        
+        # Crear tabla matplotlib
+        table = ax_list.table(
+            cellText=table_data,
+            cellLoc='left',
+            loc='center',
+            bbox=[0.02, 0.1, 0.96, 0.8]  # [left, bottom, width, height]
+        )
+        
+        # Formatear tabla
+        table.auto_set_font_size(False)
+        table.set_fontsize(8)
+        table.scale(1, 1.5)  # Ajustar tamaño
+        
+        # Estilo de celdas
+        for key, cell in table.get_celld().items():
+            cell.set_edgecolor('lightgray')
+            cell.set_linewidth(0.5)
+            if key[0] == 0:  # Encabezado (primera fila)
+                cell.set_facecolor('#f0f0f0')
+                cell.set_text_props(weight='bold')
+                
+        # MEJORA ALTERNATIVA: Si prefieres texto en lugar de tabla, usa esta versión:
+        """
+        # Distribuir texto en columnas equidistantes
+        column_width = 0.95 / n_columns
+        for i, column_text in enumerate(column_texts):
+            x_pos = 0.02 + i * column_width
+            ax_list.text(x_pos, 0.85, column_text, 
+                        fontsize=8, 
+                        verticalalignment='top',
+                        horizontalalignment='left',
+                        transform=ax_list.transAxes,
+                        bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray", alpha=0.7))
+        """
+        
+        ax_list.set_xlim(0, 1)
+        ax_list.set_ylim(0, 1)
+        ax_list.axis('off')
+        
         plt.tight_layout()
         
         if save_path:
             plt.savefig(save_path, dpi=config.VISUALIZATION_CONFIG['dpi'],
-                       bbox_inches='tight')
+                    bbox_inches='tight')
             print(f"✓ Comparación guardada en: {save_path}")
         
         plt.show()
-    
+        
     def plot_edge_probabilities(self,
                                G: nx.Graph,
                                edge_probs: Dict[Tuple, float],
